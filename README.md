@@ -34,7 +34,9 @@ _final HelloWorld.js
 
 ## Installation
 
-TODO
+```sh
+brew install beuluis/homebrew-tap/_final
+```
 
 ## Parameters
 
