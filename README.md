@@ -16,6 +16,7 @@
     <a href="https://github.com/beuluis/_final-REMASTERED/issues">Report Bug</a>
     ·
     <a href="https://github.com/beuluis/_final-REMASTERED/issues">Request Feature</a>
+    ·
   </p>
 </p>
 

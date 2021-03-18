@@ -83,8 +83,19 @@ do
             final_modifier="$final_modifier$separator"
         fi
 
+        # generate random based on modifiers lenght
+        rand=$(($RANDOM % ${#modifiers[@]}))
+
+        # perform random uppercase modification
+        if (( ($RANDOM % 10 % 5) == 0)); then
+            # pick random modifier and transform to uppercase
+            modifier=$(echo ${modifiers[$rand]} | tr a-z A-Z)
+        else
+            # pick random modifier
+            modifier=${modifiers[$rand]}
+        fi
+
         # stitch it together
-        modifier=${modifiers[$RANDOM % ${#modifiers[@]} ]}
         final_modifier="$final_modifier$modifier"
     done
 
