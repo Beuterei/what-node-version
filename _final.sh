@@ -8,57 +8,101 @@
 #
 ####################################################
 
+# all possible modifiers
+modifiers=(
+    final
+    2.1
+    2.0
+    forSure
+    1.1
+    remastered
+    test
+    new
+    NoKidding
+    HereWeGo
+    thisOne
+    thiswilldo
+    updated
+    100%
+    real
+    actually
+    this
+    fix
+)
+
+# all possible separators
+separators=(
+    _
+    -
+    .
+    __
+    ___
+)
+
 # print usage page
 usage() {
     cat <<EOF
-usage: _final [-eh] file ...
-  -e      only echos the generated names
-  -h      this page
+Usage: _final [OPTIONS...] FILES...
+  -h  --help                      Show this usage summary and exit
+  -e                              Only echos back the generated names
+      --use_separators=<boolean>  Use separators (e.g. . , - _)
+      --modifiers_max=<number>    Maximum modifiers to be generated
 EOF
+    exit 0
 }
 
-# grep values from config files
-config_read_file() {
-    (grep -E "^${2}=" -m 1 "${1}" 2>/dev/null || echo "VAR=__UNDEFINED__") | head -n 1 | cut -d '=' -f 2-;
-}
-
-# get custom config or grep it with from default config file
-config_get() {
-    val="$(config_read_file config.conf "${1}")";
-    if [ "${val}" = "__UNDEFINED__" ]; then
-        val="$(config_read_file config.defaults.conf "${1}")";
-    fi
-    printf -- "%s" "${val}";
-}
+if [ $# -eq 0 ]; then
+    usage
+fi
 
 # set default values
 echo_mode=false
+use_separators=true
+modifiers_max=5
 
-# catch option params
-if [ "$1" == "-h" ] ; then
-    # show usage page
-    usage
-    exit 0
-elif [ "$1" == "-e" ] ; then
-    # set apllication in echo only mode
-    echo_mode=true
-    shift;
-fi
+# loop over flags
+while test $# -gt 0; do
+    case "$1" in
+    -h | --help)
+        usage
+        ;;
+    -e)
+        echo_mode=true
+        shift
+        ;;
+    --use_separators*)
+        use_separators=$(echo "$1" | sed -e 's/^[^=]*=//g')
+        # test if empty or not boolean
+        if [ "$use_separators" != false ] && [ "$use_separators" != true ]; then
+            echo "use_separators to be a boolean"
+            exit 128
+        fi
+        shift
+        ;;
+    --modifiers_max*)
+        modifiers_max=$(echo "$1" | sed -e 's/^[^=]*=//g')
+        # check if empty or not number
+        if [ -z "$modifiers_max" ] || ((modifiers_max <= 0)); then
+            echo "modifiers_max needs to be a number greater then 0"
+            exit 128
+        fi
+        shift
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
 
-# fetch files content
-IFS=$'\n' modifiers=($(cat modifiers.txt))
-IFS=$'\n' separators=($(cat separators.txt))
-
-# loop over all params
-for fullpath in "$@"
-do
+# loop over params
+for fullpath in "$@"; do
     final_modifier=""
 
     # seperate file into path, name and extension
     filename="${fullpath##*/}"
-    dir="${fullpath:0:${#fullpath} - ${#filename}}"
+    dir="${fullpath:0:${#fullpath}-${#filename}}"
     base="${filename%.[^.]*}"
-    ext="${filename:${#base} + 1}"
+    ext="${filename:${#base}+1}"
 
     # catch no extension and .name
     if [[ -z "${base}" && -n "$ext" ]]; then
@@ -69,27 +113,26 @@ do
     fi
 
     # check if directory exists
-    if ! $echo_mode && ! [ -z "$dir" ] && ! [ -d "$dir" ]; then
+    if ! $echo_mode && [ -n "$dir" ] && ! [ -d "$dir" ]; then
         echo "$dir: No such file or directory"
-        exit 1
+        exit 128
     fi
 
     # get random amout of modifiers
-    for ((n=0;n<$(( RANDOM % ($(config_get modifiers_max) - 1 + 1 ) + 1 ));n++))
-    do
+    for ((n = 0; n < $((RANDOM % (modifiers_max - 1 + 1) + 1)); n++)); do
         # check if seperators should be generated
-        if $(config_get separators); then
-            separator=${separators[$RANDOM % ${#separators[@]} ]}
+        if "$use_separators"; then
+            separator=${separators[$RANDOM % ${#separators[@]}]}
             final_modifier="$final_modifier$separator"
         fi
 
         # generate random based on modifiers lenght
-        rand=$(($RANDOM % ${#modifiers[@]}))
+        rand=$((RANDOM % ${#modifiers[@]}))
 
         # perform random uppercase modification
-        if (( ($RANDOM % 10 % 5) == 0)); then
+        if (((RANDOM % 10 % 5) == 0)); then
             # pick random modifier and transform to uppercase
-            modifier=$(echo ${modifiers[$rand]} | tr a-z A-Z)
+            modifier=$(echo "${modifiers[$rand]}" | tr '[:lower:]' '[:upper:]')
         else
             # pick random modifier
             modifier=${modifiers[$rand]}
@@ -103,10 +146,10 @@ do
     generated="$dir$base$final_modifier$ext"
     if $echo_mode; then
         # only echo in echo mode
-        echo $generated;
+        echo "$generated"
     else
         # for everything else touch the file
-        touch $generated;
+        touch "$generated"
     fi
     # catch error code produced by echo or touch
     retval=$?
@@ -117,4 +160,4 @@ do
 done
 
 # exit script
-exit 0;
+exit 0
