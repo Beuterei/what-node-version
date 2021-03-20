@@ -38,6 +38,14 @@ _final HelloWorld.js
 brew install beuluis/homebrew-tap/_final
 ```
 
+or without brew
+
+```bash
+# installs to /usr/local/bin/_final
+curl -L https://raw.githubusercontent.com/beuluis/_final-REMASTERED/master/_final >/usr/local/bin/_final
+chmod 0755 /usr/local/bin/_final
+```
+
 ## Parameters
 
 | Parameter          | Description                         | type      |
