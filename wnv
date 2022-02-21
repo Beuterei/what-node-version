@@ -48,15 +48,15 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 version_dir="$script_dir/versions.txt"
 
 if [[ ! -e 'package.json' ]]; then
-    npm $@
+    npm "$@"
     exit 0
 fi
 
 engines=$(jq '.engines.node' -r package.json)
 
 # no configuration found dont switch version
-if [ ! -n "$engines" ]; then
-    npm $@
+if [[ -z $engines ]] || [[ $engines == "null" ]] ; then
+    npm "$@"
     exit 0
 fi
 
@@ -68,7 +68,9 @@ fi
 node_version=($(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' <<<"$engines"))
 
 # read versions new if file is older then 24h or no_cache is set
-if [[ ! -z "${NO_CACHE}" ]] || test $(find $version_dir -mmin +1440); then
+if [[ -n "${NO_CACHE}" ]] || test "$(find "$version_dir" -mmin +1440)"; then
+    echo "Fetch node versions. This takes a little..."
+
     # curl version list from nodejs dist index
     version_list=($(curl --silent https://nodejs.org/dist/ | grep -o 'href=".*">' | sed 's/href="//;s/v//;s/\///;s/">//'))
 
@@ -76,7 +78,7 @@ if [[ ! -z "${NO_CACHE}" ]] || test $(find $version_dir -mmin +1440); then
         # test if it is version
         if [[ "${version_list[index]}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             # split version into subversions
-            read -a split <<<$(
+            read -ra split <<<$(
                 IFS="."
                 echo ${version_list[index]}
             )
@@ -100,7 +102,7 @@ if [[ ! -z "${NO_CACHE}" ]] || test $(find $version_dir -mmin +1440); then
 
     for index in "${!version_list[@]}"; do
         # split version into subversions
-        read -a split <<<$(
+        read -ra split <<<$(
             IFS="."
             echo ${version_list[index]}
         )
@@ -113,16 +115,14 @@ if [[ ! -z "${NO_CACHE}" ]] || test $(find $version_dir -mmin +1440); then
     done
 
     # write to file to be a little faster
-    printf "%s\n" "${version_list[@]}" >$version_dir
+    printf "%s\n" "${version_list[@]}" >"$version_dir"
 else
     # usign cached version
-    version_list=($(cat $version_dir | tr '\n' ' '))
+    version_list=($(cat "$version_dir" | tr '\n' ' '))
 fi
 
-echo $version_list
-
 # check if specified version is a legit version
-if [[ ! " ${version_list[*]} " =~ " ${node_version} " ]]; then
+if [[ ! " ${version_list[*]} " =~ ${node_version[0]} ]]; then
     echo "Unkonw node version specefied in package.json"
     exit 1
 fi
@@ -131,35 +131,35 @@ fi
 case $engines in
 
 *">"*)
-    node_versio_majorn=($(grep -Eo '^\d+' <<<"$node_version"))
-    nvm install $node_versio_majorn
-    npm $@
+    node_versio_majorn=($(grep -Eo '^\d+' <<<"${node_version[0]}"))
+    nvm install "${node_versio_majorn[0]}"
+    npm "$@"
     ;;
 
 *"<"*)
-    if [[ $string == *"="* ]]; then
-        nvm install $node_version
-        npm $@
+    if [[ $engines == *"="* ]]; then
+        nvm install "${node_version[0]}"
+        npm "$@"
         exit 0
     fi
     # get index from version
     for index in "${!version_list[@]}"; do
-        [[ "${version_list[$index]}" = "${node_version}" ]] && break
+        [[ "${version_list[$index]}" = "${node_version[0]}" ]] && break
     done
 
     # use the version previous to specified
-    nvm install ${version_list[$index - 1]}
-    npm $@
+    nvm install "${version_list[$index - 1]}"
+    npm "$@"
     ;;
 
 *"="*)
-    nvm install $node_version
-    npm $@
+    nvm install "${node_version[0]}"
+    npm "$@"
     ;;
 
 *)
-    nvm install $node_version
-    npm $@
+    nvm install "${node_version[0]}"
+    npm "$@"
     ;;
 esac
 
