@@ -36,6 +36,7 @@ or evan better: with an alias
 
 ```bash
 echo 'alias npm="wnv"' >> ~/.bashrc
+source ~/.bashrc
 npm run start:dev
 ```
 
@@ -59,12 +60,27 @@ chmod 0755 /usr/local/bin/wnv
 | ----------- | ------------------------------- |
 | `-h --help` | Show the usage summary and exit |
 
-### Force reload of node versions cache
+## Force reload of node versions cache
 
 Run command with the `NO_CACHE` environment variable set
 
 ```bash
 NO_CACHE=1 wnv run some_command
+```
+
+## Alias
+
+Override the normal `npm` command to make it easy to use.
+
+```bash
+echo 'alias npm="wnv"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+## Ignore alias
+
+```bash
+\npm run start:dev
 ```
 
 <!-- CONTRIBUTING -->

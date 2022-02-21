@@ -19,6 +19,8 @@ EOF
     exit 0
 }
 
+# TODO: verbose and silence nvm
+
 # if no args print usage
 if [ $# -eq 0 ]; then
     usage
