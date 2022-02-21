@@ -36,12 +36,13 @@ while test $# -gt 0; do
     esac
 done
 
-if [ ! -d "$HOME/.nvm" ]; then
-    echo "nvm not found please install it"
+if [ ! -f /usr/local/opt/nvm/nvm.sh ]; then
+    echo "nvm not found please install it. brew install nvm"
+    exit 1
 fi
 
 # source nvm
-source "$HOME/.nvm/nvm.sh"
+source /usr/local/opt/nvm/nvm.sh
 
 padding=10000
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
