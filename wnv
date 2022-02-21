@@ -68,7 +68,7 @@ fi
 node_version=($(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' <<<"$engines"))
 
 # read versions new if file is older then 24h or no_cache is set
-if [[ -n "${NO_CACHE}" ]] || test "$(find "$version_dir" -mmin +1440)"; then
+if [[ -n $NO_CACHE ]] || test "$(find "$version_dir" -mmin +1440)"; then
     echo "Fetch node versions. This takes a little..."
 
     # curl version list from nodejs dist index
