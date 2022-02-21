@@ -1,0 +1,157 @@
+#!/bin/bash
+
+########### what-node-version #################
+#
+# Script for automatically switch node versions based on the configured engine the the package.json
+# Author: Luis Beu
+#
+####################################################
+
+# print usage page
+usage() {
+    cat <<EOF
+Usage: wnv [NPPM OPTIONS...]
+  -h  --help                      Show this usage summary and exit
+
+NO_CACHE=1 wnv [NPPM OPTIONS...]
+  pulls the node version cache again
+EOF
+    exit 0
+}
+
+# if no args print usage
+if [ $# -eq 0 ]; then
+    usage
+fi
+
+# loop over flags
+while test $# -gt 0; do
+    case "$1" in
+    -h | --help)
+        usage
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
+
+if [ ! -d "$HOME/.nvm" ]; then
+    echo "nvm not found please install it"
+fi
+
+# source nvm
+source "$HOME/.nvm/nvm.sh"
+
+padding=10000
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+version_dir="$script_dir/versions.txt"
+engines=$(jq '.engines.node' -r package.json)
+
+# no configuration found dont switch version
+if [ ! -n "$engines" ]; then
+    npm $@
+    exit 0
+fi
+
+# get engine config from package.json
+node_version=($(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' <<<"$engines"))
+
+# read versions new if file is older then 24h or no_cache is set
+if [[ ! -z "${NO_CACHE}" ]] || test $(find $version_dir -mmin +1440); then
+    # curl version list from nodejs dist index
+    version_list=($(curl --silent https://nodejs.org/dist/ | grep -o 'href=".*">' | sed 's/href="//;s/v//;s/\///;s/">//'))
+
+    for index in "${!version_list[@]}"; do
+        # test if it is version
+        if [[ "${version_list[index]}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            # split version into subversions
+            read -a split <<<$(
+                IFS="."
+                echo ${version_list[index]}
+            )
+            # add padding for right sorting
+            for i in "${!split[@]}"; do
+                split[$i]=$((${split[$i]} + $padding))
+            done
+
+            # put array back together
+            version_list[$index]=$(printf "%s." "${split[@]}" | cut -d "." -f 1-${#split[@]})
+        else
+            # unset all that is not considered a version
+            unset -v 'version_list[$index]'
+        fi
+    done
+
+    # sort array
+    version_list=("${version_list[@]}")
+    IFS=$'\n' version_list=($(sort <<<"${version_list[*]}"))
+    unset IFS
+
+    for index in "${!version_list[@]}"; do
+        # split version into subversions
+        read -a split <<<$(
+            IFS="."
+            echo ${version_list[index]}
+        )
+        # remove padding
+        for i in "${!split[@]}"; do
+            split[$i]=$((${split[$i]} - $padding))
+        done
+        # put array back together
+        version_list[$index]=$(printf "%s." "${split[@]}" | cut -d "." -f 1-${#split[@]})
+    done
+
+    # write to file to be a little faster
+    printf "%s\n" "${version_list[@]}" >$version_dir
+else
+    # usign cached version
+    version_list=($(cat $version_dir | tr '\n' ' '))
+fi
+
+echo $version_list
+
+# check if specified version is a legit version
+if [[ ! " ${version_list[*]} " =~ " ${node_version} " ]]; then
+    echo "Unkonw node version specefied in package.json"
+    exit 1
+fi
+
+# check what to do and which version to use/install
+case $engines in
+
+*">"*)
+    node_versio_majorn=($(grep -Eo '^\d+' <<<"$node_version"))
+    nvm install $node_versio_majorn
+    npm $@
+    ;;
+
+*"<"*)
+    if [[ $string == *"="* ]]; then
+        nvm install $node_version
+        npm $@
+        exit 0
+    fi
+    # get index from version
+    for index in "${!version_list[@]}"; do
+        [[ "${version_list[$index]}" = "${node_version}" ]] && break
+    done
+
+    # use the version previous to specified
+    nvm install ${version_list[$index - 1]}
+    npm $@
+    ;;
+
+*"="*)
+    nvm install $node_version
+    npm $@
+    ;;
+
+*)
+    nvm install $node_version
+    npm $@
+    ;;
+esac
+
+# exit script successful
+exit 0

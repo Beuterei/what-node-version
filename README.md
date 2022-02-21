@@ -6,16 +6,16 @@
 <!-- PROJECT HEADER -->
 <br />
 <p align="center">
-  <h3 align="center">_final-REMASTERED</h3>
+  <h3 align="center">what-node-version</h3>
 
   <p align="center">
-    Script for finding the final name
+    Script for automatically switch node versions based on the configured engine the the package.json
     <br />
     <br />
     ·
-    <a href="https://github.com/beuluis/_final-REMASTERED/issues">Report Bug</a>
+    <a href="https://github.com/beuluis/what-node-version/issues">Report Bug</a>
     ·
-    <a href="https://github.com/beuluis/_final-REMASTERED/issues">Request Feature</a>
+    <a href="https://github.com/beuluis/what-node-version/issues">Request Feature</a>
     ·
   </p>
 </p>
@@ -24,36 +24,48 @@
 
 ## About The Project
 
-Helps you find the perfect final name for your file
+It tries to parse the specified engine in `package.json`. It used [nvm](https://github.com/nvm-sh/nvm) to switch to the determined version.
 
 ## Usage
 
-```sh
-_final HelloWorld.js
+```bash
+wnv run start:dev
+```
+
+or evan better: with an alias
+
+```bash
+echo 'alias npm="wnv"' >> ~/.bashrc
+npm run start:dev
 ```
 
 ## Installation
 
-```sh
-brew install beuluis/homebrew-tap/_final
+```bash
+brew install beuluis/homebrew-tap/wnv
 ```
 
 or without brew
 
 ```bash
-# installs to /usr/local/bin/_final
-curl -L https://raw.githubusercontent.com/beuluis/_final-REMASTERED/master/_final >/usr/local/bin/_final
-chmod 0755 /usr/local/bin/_final
+# installs to /usr/local/bin/wnv
+curl -L https://raw.githubusercontent.com/beuluis/what-node-version/master/wnv >/usr/local/bin/wnv
+chmod 0755 /usr/local/bin/wnv
 ```
 
 ## Parameters
 
-| Parameter          | Description                         | type      |
-| ------------------ | ----------------------------------- | --------- |
-| `-h --help`        | Show this usage summary and exit    | -         |
-| `-e`               | Only echos back the generated names | -         |
-| `--use_separators` | Use separators (e.g. . , - \_)      | `boolean` |
-| `--modifiers_max`  | Maximum modifiers to be generated   | `number`  |
+| Parameter   | Description                     |
+| ----------- | ------------------------------- |
+| `-h --help` | Show the usage summary and exit |
+
+### Force reload of node versions cache
+
+Run command with the `NO_CACHE` environment variable set
+
+```bash
+NO_CACHE=1 wnv run some_command
+```
 
 <!-- CONTRIBUTING -->
 
@@ -67,12 +79,6 @@ Contributions are what make the open source community such an amazing place to l
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-### Add more modifiers and separators
-
-Add them at the top of the script. Each line is a modifiers/separators.
-
-Modifiers and separators may only contain characters that are allowed in filenames.
-
 <!-- CONTACT -->
 
 ## Contact
@@ -82,12 +88,12 @@ Luis Beu - me@luisbeu.de
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/beuluis/_final-REMASTERED.svg?style=flat-square
-[contributors-url]: https://github.com/beuluis/_final-REMASTERED/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/beuluis/_final-REMASTERED.svg?style=flat-square
-[forks-url]: https://github.com/beuluis/_final-REMASTERED/network/members
-[stars-shield]: https://img.shields.io/github/stars/beuluis/_final-REMASTERED.svg?style=flat-square
-[stars-url]: https://github.com/beuluis/_final-REMASTERED/stargazers
-[issues-shield]: https://img.shields.io/github/issues/beuluis/_final-REMASTERED.svg?style=flat-square
-[issues-url]: https://github.com/beuluis/_final-REMASTERED/issues
-[license-shield]: https://img.shields.io/github/license/beuluis/_final-REMASTERED.svg?style=flat-square
+[contributors-shield]: https://img.shields.io/github/contributors/beuluis/what-node-version.svg?style=flat-square
+[contributors-url]: https://github.com/beuluis/what-node-version/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/beuluis/what-node-version.svg?style=flat-square
+[forks-url]: https://github.com/beuluis/what-node-version/network/members
+[stars-shield]: https://img.shields.io/github/stars/beuluis/what-node-version.svg?style=flat-square
+[stars-url]: https://github.com/beuluis/what-node-version/stargazers
+[issues-shield]: https://img.shields.io/github/issues/beuluis/what-node-version.svg?style=flat-square
+[issues-url]: https://github.com/beuluis/what-node-version/issues
+[license-shield]: https://img.shields.io/github/license/beuluis/what-node-version.svg?style=flat-square
