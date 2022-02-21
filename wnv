@@ -2,7 +2,7 @@
 
 ########### what-node-version #################
 #
-# Script for automatically switch node versions based on the configured engine the the package.json
+# Script for automatically switch node versions based on the configured engine in the package.json
 # Author: Luis Beu
 #
 ####################################################

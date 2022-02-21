@@ -9,7 +9,7 @@
   <h3 align="center">what-node-version</h3>
 
   <p align="center">
-    Script for automatically switch node versions based on the configured engine the the package.json
+    Script for automatically switch node versions based on the configured engine in the package.json
     <br />
     <br />
     ·
