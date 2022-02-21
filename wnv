@@ -46,12 +46,22 @@ source "$HOME/.nvm/nvm.sh"
 padding=10000
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 version_dir="$script_dir/versions.txt"
+
+if [[ ! -e 'package.json' ]]; then
+    npm $@
+    exit 0
+fi
+
 engines=$(jq '.engines.node' -r package.json)
 
 # no configuration found dont switch version
 if [ ! -n "$engines" ]; then
     npm $@
     exit 0
+fi
+
+if [[ ! -e $version_dir ]]; then
+    NO_CACHE=1
 fi
 
 # get engine config from package.json
